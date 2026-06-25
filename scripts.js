@@ -28,6 +28,10 @@ const getMicAndCamera = async (e) => {
 
 const showMyFeed = (e) => {
   console.log("showMyFeed is working");
+  if (!stream) {
+    alert("Stream is still loading..");
+    return;
+  }
   videoEl.srcObject = stream; //Setting our mediastream(stream) to our <video/>
   const tracks = stream.getTracks();
   console.log(tracks);
@@ -44,6 +48,10 @@ const showMyFeed = (e) => {
 };
 
 const stopMyFeed = (e) => {
+  if (!stream) {
+    alert("Stream is still loading..");
+    return;
+  }
   const tracks = stream.getTracks();
   tracks.forEach((track) => {
     // console.log(track);
@@ -72,3 +80,7 @@ document.querySelector("#show-video").addEventListener("click", (e) => {
 document.querySelector("#stop-video").addEventListener("click", (e) => {
   stopMyFeed(e);
 });
+
+document
+  .querySelector("#change-size")
+  .addEventListener("click", (e) => changeVideoSize(e));
