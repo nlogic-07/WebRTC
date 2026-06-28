@@ -1,6 +1,7 @@
 const videoEl = document.querySelector("#my-video");
 
 let stream = null; //Init stream var to use stream anywhere
+let mediaStream = null;
 const constraints = {
   audio: true,
   video: true,
@@ -95,4 +96,8 @@ document.querySelector("#stop-record").addEventListener("click", (e) => {
 
 document.querySelector("#play-record").addEventListener("click", (e) => {
   playRecording(e);
+});
+
+document.querySelector("#share-screen").addEventListener("click", (e) => {
+  shareScreen(e);
 });
