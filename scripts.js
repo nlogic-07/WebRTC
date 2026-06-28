@@ -84,3 +84,15 @@ document.querySelector("#stop-video").addEventListener("click", (e) => {
 document
   .querySelector("#change-size")
   .addEventListener("click", (e) => changeVideoSize(e));
+
+document.querySelector("#start-record").addEventListener("click", (e) => {
+  startRecording(e);
+});
+
+document.querySelector("#stop-record").addEventListener("click", (e) => {
+  stopRecording(e);
+});
+
+document.querySelector("#play-record").addEventListener("click", (e) => {
+  playRecording(e);
+});
