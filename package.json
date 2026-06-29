@@ -1,0 +1,24 @@
+{
+  "name": "webrtc",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/nlogic-07/WebRTC#readme",
+  "bugs": {
+    "url": "https://github.com/nlogic-07/WebRTC/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nlogic-07/WebRTC.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "changeButtons.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
