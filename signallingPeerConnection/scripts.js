@@ -1,9 +1,17 @@
+const userName = "JasC-" + Math.floor(Math.random() * 100000);
+const password = "x";
+document.querySelector("#user-name").innerHTML = userName;
+
 const localVideoEl = document.querySelector("#local-video");
 const remoteVideoEl = document.querySelector("#remote-video");
 
 let localStream;
 let remoteStream;
 let peerConnection;
+
+const socket = io.connect("https://localhost:9090", {
+  auth: { username, password },
+});
 
 let peerConfiguration = {
   iceServers: [
@@ -13,15 +21,8 @@ let peerConfiguration = {
   ],
 };
 const call = async (e) => {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-  });
-
-  localVideoEl.srcObject = stream;
-  localStream = stream;
-
-  await createPeerConnection(peerConfiguration);
-
+  await fetchUserMedia();
+  await createPeerConnection();
   try {
     console.log("Creating offer");
     const offer = await peerConnection.createOffer();
@@ -29,6 +30,23 @@ const call = async (e) => {
   } catch (err) {
     console.log(err);
   }
+};
+
+const fetchUserMedia = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
+      localVideoEl.srcObject = stream;
+      localStream = stream;
+      resolve();
+    } catch (err) {
+      console.log(err);
+      reject();
+    }
+  });
 };
 
 const createPeerConnection = async (e) => {
