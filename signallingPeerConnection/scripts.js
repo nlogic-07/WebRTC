@@ -21,6 +21,7 @@ let peerConfiguration = {
     },
   ],
 };
+
 const call = async (e) => {
   await fetchUserMedia();
   await createPeerConnection();
@@ -71,7 +72,7 @@ const createPeerConnection = async (e) => {
       if (e.candidate) {
         socket.emit("sendIceCandidateToSignallingServer", {
           iceCandidate: e.candidate,
-          iceUername: username,
+          iceUsername: username,
           didIOffer,
         });
       }
@@ -84,8 +85,32 @@ const createPeerConnection = async (e) => {
         remoteStream.addTrack(track, remoteStream);
       });
     });
+
+    if (offerObj) {
+      //this won't be set when called from call();
+      //will be set when we call from answerOffer()
+      // console.log(peerConnection.signalingState) //should be stable because no setDesc has been run yet
+      await peerConnection.setRemoteDescription(offerObj.offer);
+      // console.log(peerConnection.signalingState) //should be have-remote-offer, because client2 has setRemoteDesc on the offer
+    }
     resolve();
   });
+};
+
+const answerOffer = async (offerObj) => {
+  await fetchUserMedia();
+  await createPeerConnection(offerObj);
+  const answer = await peerConnection.createAnswer({});
+  await peerConnection.setLocalDescription(answer);
+  console.log(offerObj);
+  console.log(answer);
+
+  const offerIceCandidates = await socket.emitWithAck("newAnswer", offerObj);
+  offerIceCandidates.forEach((c) => {
+    peerConnection.addIceCandidate(c);
+    console.log("======Added Ice Candidate======");
+  });
+  console.log(offerIceCandidates);
 };
 
 document.querySelector("#call").addEventListener("click", call);

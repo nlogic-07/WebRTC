@@ -27,6 +27,15 @@ const connectedSockets = [
   //username , socketID
 ]
 
+const offers = [
+  // offererUsername
+  // offer
+  // offererIceCandidates
+  // answererUsername
+  // answer
+  // answererIceCandidates
+]
+
 io.on("connection" , (socket)=>{
   const username = socket.handshake.auth.userName,
   const password = socket.handshake.auth.password
@@ -40,5 +49,19 @@ io.on("connection" , (socket)=>{
     socketId :socket.id,
     username
   })
+
+
+  socket.on("newOffer" ,(newOffer)=>{
+    offers.push({
+            offererUserName: userName,
+            offer: newOffer,
+            offererIceCandidates: [],
+            answererUserName: null,
+            answer: null,
+            answererIceCandidates: []
+    })
+
+     socket.broadcast.emit('newOfferAwaiting',offers.slice(-1))
+  } )
 
 })
