@@ -22,3 +22,23 @@ const io = socketio(expressServer, {
 express.listen(9090, () => {
   console.log("Server listening to port 9090");
 });
+
+const connectedSockets = [
+  //username , socketID
+]
+
+io.on("connection" , (socket)=>{
+  const username = socket.handshake.auth.userName,
+  const password = socket.handshake.auth.password
+
+  if(password !== "x"){
+    socket.disconnect(true);
+    return;
+  }
+
+  connectedSockets.push({
+    socketId :socket.id,
+    username
+  })
+
+})

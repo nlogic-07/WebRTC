@@ -8,6 +8,7 @@ const remoteVideoEl = document.querySelector("#remote-video");
 let localStream;
 let remoteStream;
 let peerConnection;
+let didIOffer = false;
 
 const socket = io.connect("https://localhost:9090", {
   auth: { username, password },
@@ -27,6 +28,10 @@ const call = async (e) => {
     console.log("Creating offer");
     const offer = await peerConnection.createOffer();
     console.log(offer);
+
+    peerConnection.setLocalDesciption(offer);
+    didIOffer = true;
+    socket.emit("newOffer", offer); //send offer to signalling server
   } catch (err) {
     console.log(err);
   }
@@ -53,6 +58,8 @@ const createPeerConnection = async (e) => {
   return new Promise(async (resolve, reject) => {
     peerConnection = await new RTCPeerConnection(peerConfiguration);
 
+    remoteStream = new MediaStream();
+    remoteVideoEl.srcObject = remoteStream;
     localStream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -60,6 +67,22 @@ const createPeerConnection = async (e) => {
     peerConnection.addEventListener("icecandidate", (e) => {
       console.log("Ice candidate ");
       console.log(e);
+
+      if (e.candidate) {
+        socket.emit("sendIceCandidateToSignallingServer", {
+          iceCandidate: e.candidate,
+          iceUername: username,
+          didIOffer,
+        });
+      }
+    });
+
+    peerConnection.addEventListener("track", (e) => {
+      console.log("got a track from the other peer!!");
+      console.log(e);
+      e.streams[0].getTracks().forEach((track) => {
+        remoteStream.addTrack(track, remoteStream);
+      });
     });
     resolve();
   });
