@@ -1,31 +1,34 @@
 const express = require("express");
 const app = express();
 const fs = require("fs");
-const http = require("http");
+const https = require("https");
 const socketio = require("socket.io");
 const cors = require("cors");
+const path = require("path");
 
 app.use(express.static(__dirname));
 
-const key = fs.readFileSync("cert.key");
-const cert = fs.readFileSync("cert.crt");
+const key = fs.readFileSync(path.join(__dirname, "../cert.key"));
+const cert = fs.readFileSync(path.join(__dirname, "../cert.crt"));
+// const key = fs.readFileSync("cert.key");
+// const cert = fs.readFileSync("cert.crt");
 
-const expressServer = http.createServer({ key, cert }, app);
+const expressServer = https.createServer({ key, cert }, app);
 
 const io = socketio(expressServer, {
   cors: {
-    origin: ["http://localhost"],
+    origin: ["https://localhost"],
     methods: ["GET", "POST"],
   },
 });
 
-express.listen(9090, () => {
+expressServer.listen(9090, () => {
   console.log("Server listening to port 9090");
 });
 
 const connectedSockets = [
   //username , socketID
-]
+];
 
 const offers = [
   // offererUsername
@@ -34,34 +37,32 @@ const offers = [
   // answererUsername
   // answer
   // answererIceCandidates
-]
+];
 
-io.on("connection" , (socket)=>{
-  const username = socket.handshake.auth.userName,
-  const password = socket.handshake.auth.password
+io.on("connection", (socket) => {
+  const userName = socket.handshake.auth.userName;
+  const password = socket.handshake.auth.password;
 
-  if(password !== "x"){
+  if (password !== "x") {
     socket.disconnect(true);
     return;
   }
 
   connectedSockets.push({
-    socketId :socket.id,
-    username
-  })
+    socketId: socket.id,
+    userName,
+  });
 
-
-  socket.on("newOffer" ,(newOffer)=>{
+  socket.on("newOffer", (newOffer) => {
     offers.push({
-            offererUserName: userName,
-            offer: newOffer,
-            offererIceCandidates: [],
-            answererUserName: null,
-            answer: null,
-            answererIceCandidates: []
-    })
+      offererUserName: userName,
+      offer: newOffer,
+      offererIceCandidates: [],
+      answererUserName: null,
+      answer: null,
+      answererIceCandidates: [],
+    });
 
-     socket.broadcast.emit('newOfferAwaiting',offers.slice(-1))
-  } )
-
-})
+    socket.broadcast.emit("newOfferAwaiting", offers.slice(-1));
+  });
+});

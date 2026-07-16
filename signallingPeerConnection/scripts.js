@@ -10,8 +10,8 @@ let remoteStream;
 let peerConnection;
 let didIOffer = false;
 
-const socket = io.connect("https://localhost:9090", {
-  auth: { username, password },
+const socket = io.connect("https://localhost:9090/", {
+  auth: { userName, password },
 });
 
 let peerConfiguration = {
@@ -30,7 +30,7 @@ const call = async (e) => {
     const offer = await peerConnection.createOffer();
     console.log(offer);
 
-    peerConnection.setLocalDesciption(offer);
+    peerConnection.setLocalDescription(offer);
     didIOffer = true;
     socket.emit("newOffer", offer); //send offer to signalling server
   } catch (err) {
@@ -55,7 +55,7 @@ const fetchUserMedia = () => {
   });
 };
 
-const createPeerConnection = async (e) => {
+const createPeerConnection = async (offerObj) => {
   return new Promise(async (resolve, reject) => {
     peerConnection = await new RTCPeerConnection(peerConfiguration);
 
