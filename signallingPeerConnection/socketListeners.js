@@ -1,3 +1,7 @@
+socket.on("availableOffers", (offers) => {
+  createOfferEls(offers);
+});
+
 socket.on("newOfferAwaiting", (offers) => {
   createOfferEls(offers);
 });

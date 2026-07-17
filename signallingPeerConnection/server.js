@@ -53,6 +53,10 @@ io.on("connection", (socket) => {
     userName,
   });
 
+  if (offers.length) {
+    socket.emit("availableOffers", offers);
+  }
+
   socket.on("newOffer", (newOffer) => {
     offers.push({
       offererUserName: userName,
@@ -63,6 +67,44 @@ io.on("connection", (socket) => {
       answererIceCandidates: [],
     });
 
-    socket.broadcast.emit("newOfferAwaiting", offers.slice(-1));
+    socket.broadcast.emit("newOfferAwaiting", offers.slice(-1)); //send the newly added offer to other connected sockets
+  });
+
+  socket.on("newAnswer", (offerObj, ackFunction) => {
+    const socketToAnswer = connectedSockets.find(
+      (s) => s.userName === offerObj.offererUserName,
+    );
+    if (!socketToAnswer) {
+      console.log("No matching socket!!");
+    }
+
+    const socketIdToAnswer = socketToAnswer.socketId;
+
+    const offerToUpdate = offers.find(
+      (o) => o.offererUserName === offerObj.offererUserName,
+    );
+
+    if (!offerToUpdate) {
+      console.log("No offer to Update");
+    }
+
+    ackFunction(offerToUpdate.offererIceCandidates);
+    offerToUpdate.answer = offerObj.answer;
+    offerToUpdate.answererUserName = userName;
+
+    socket.to(socketIdToAnswer).emit("answerResponse", offerToUpdate);
+  });
+
+  socket.on("sendIceCandidateToSignalingServer", (iceCandidateObj) => {
+    const { didIOffer, iceUserName, iceCandidate } = iceCandidateObj;
+    if (didIOffer) {
+      const offerInOffers = offers.find(
+        (o) => o.offererUserName === iceUserName,
+      );
+      if (offerInOffers) {
+        offerInOffers.offererIceCandidates.push(iceCandidate);
+      }
+    } else {
+    }
   });
 });

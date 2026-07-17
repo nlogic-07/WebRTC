@@ -10,7 +10,7 @@ let remoteStream;
 let peerConnection;
 let didIOffer = false;
 
-const socket = io.connect("https://localhost:9090/", {
+const socket = io.connect("https://localhost:9090", {
   auth: { userName, password },
 });
 
@@ -30,12 +30,28 @@ const call = async (e) => {
     const offer = await peerConnection.createOffer();
     console.log(offer);
 
-    peerConnection.setLocalDescription(offer);
+    peerConnection.setLocalDesciption(offer); //this triggers icecandidate event
     didIOffer = true;
     socket.emit("newOffer", offer); //send offer to signalling server
   } catch (err) {
     console.log(err);
   }
+};
+
+const answerOffer = async (offerObj) => {
+  await fetchUserMedia();
+  await createPeerConnection(offerObj);
+  const answer = await peerConnection.createAnswer({});
+  await peerConnection.setLocalDescription(answer);
+  console.log(offerObj);
+  console.log(answer);
+  offerObj.answer = answer;
+  const offerIceCandidates = await socket.emitWithAck("newAnswer", offerObj);
+  offerIceCandidates.forEach((c) => {
+    peerConnection.addIceCandidate(c);
+    console.log("======Added Ice Candidate======");
+  });
+  console.log(offerIceCandidates);
 };
 
 const fetchUserMedia = () => {
@@ -72,7 +88,7 @@ const createPeerConnection = async (offerObj) => {
       if (e.candidate) {
         socket.emit("sendIceCandidateToSignallingServer", {
           iceCandidate: e.candidate,
-          iceUsername: username,
+          iceUserName: userName,
           didIOffer,
         });
       }
@@ -95,22 +111,6 @@ const createPeerConnection = async (offerObj) => {
     }
     resolve();
   });
-};
-
-const answerOffer = async (offerObj) => {
-  await fetchUserMedia();
-  await createPeerConnection(offerObj);
-  const answer = await peerConnection.createAnswer({});
-  await peerConnection.setLocalDescription(answer);
-  console.log(offerObj);
-  console.log(answer);
-
-  const offerIceCandidates = await socket.emitWithAck("newAnswer", offerObj);
-  offerIceCandidates.forEach((c) => {
-    peerConnection.addIceCandidate(c);
-    console.log("======Added Ice Candidate======");
-  });
-  console.log(offerIceCandidates);
 };
 
 document.querySelector("#call").addEventListener("click", call);
