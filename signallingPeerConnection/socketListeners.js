@@ -10,7 +10,7 @@ socket.on("answerResponse", (offerObj) => {
   addAnswer(offerObj);
 });
 
-socket.on("receivedIceCandidateFromServer", (iceCandidateObj) => {
+socket.on("receivedIceCandidateFromServer", (iceCandidate) => {
   addNewIceCandidate(iceCandidate);
 });
 

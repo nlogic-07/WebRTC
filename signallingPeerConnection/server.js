@@ -17,7 +17,7 @@ const expressServer = https.createServer({ key, cert }, app);
 
 const io = socketio(expressServer, {
   cors: {
-    origin: ["https://localhost"],
+    origin: ["https://localhost", "https://192.168.1.9"],
     methods: ["GET", "POST"],
   },
 });
@@ -76,6 +76,7 @@ io.on("connection", (socket) => {
     );
     if (!socketToAnswer) {
       console.log("No matching socket!!");
+      return;
     }
 
     const socketIdToAnswer = socketToAnswer.socketId;
@@ -86,6 +87,7 @@ io.on("connection", (socket) => {
 
     if (!offerToUpdate) {
       console.log("No offer to Update");
+      return;
     }
 
     ackFunction(offerToUpdate.offererIceCandidates);
@@ -126,7 +128,7 @@ io.on("connection", (socket) => {
         offerInOffers.answererIceCandidates.push(iceCandidate);
       }
       const socketToSendTo = connectedSockets.find(
-        (s) => s.username === offerInOffers.offererUserName,
+        (s) => s.userName === offerInOffers.offererUserName,
       );
       if (socketToSendTo) {
         socket

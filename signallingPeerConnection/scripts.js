@@ -10,7 +10,8 @@ let remoteStream;
 let peerConnection;
 let didIOffer = false;
 
-const socket = io.connect("https://localhost:9090", {
+const socket = io.connect("https://192.168.1.9:9090/", {
+  // const socket = io.connect("https://localhost:9090", {
   auth: { userName, password },
 });
 
@@ -30,7 +31,7 @@ const call = async (e) => {
     const offer = await peerConnection.createOffer();
     console.log(offer);
 
-    peerConnection.setLocalDesciption(offer); //this triggers icecandidate event
+    peerConnection.setLocalDescription(offer); //this triggers icecandidate event
     didIOffer = true;
     socket.emit("newOffer", offer); //send offer to signalling server
   } catch (err) {
@@ -46,17 +47,20 @@ const answerOffer = async (offerObj) => {
   console.log(offerObj);
   console.log(answer);
   offerObj.answer = answer;
-  const offerIceCandidates = await socket.emitWithAck("newAnswer", offerObj);
-  offerIceCandidates.forEach((c) => {
+
+  const offererIceCandidates = await socket.emitWithAck("newAnswer", offerObj);
+  console.log("ACK RECEIVED", offererIceCandidates);
+
+  offererIceCandidates.forEach((c) => {
     peerConnection.addIceCandidate(c);
     console.log("======Added Ice Candidate======");
   });
-  console.log(offerIceCandidates);
+  console.log(offererIceCandidates);
 };
 
-const addAnswer=(offerObj)=>{
-  await peerConnection.setRemoteDescription(offerObj.answer)
-}
+const addAnswer = (offerObj) => {
+  peerConnection.setRemoteDescription(offerObj.answer);
+};
 
 const fetchUserMedia = () => {
   return new Promise(async (resolve, reject) => {
@@ -90,7 +94,7 @@ const createPeerConnection = async (offerObj) => {
       console.log(e);
 
       if (e.candidate) {
-        socket.emit("sendIceCandidateToSignallingServer", {
+        socket.emit("sendIceCandidateToSignalingServer", {
           iceCandidate: e.candidate,
           iceUserName: userName,
           didIOffer,
@@ -117,9 +121,9 @@ const createPeerConnection = async (offerObj) => {
   });
 };
 
-const addNewIceCandidate = iceCandidate=>{
-    peerConnection.addIceCandidate(iceCandidate)
-    console.log("======Added Ice Candidate======")
-}
+const addNewIceCandidate = (iceCandidate) => {
+  peerConnection.addIceCandidate(iceCandidate);
+  console.log("======Added Ice Candidate======");
+};
 
 document.querySelector("#call").addEventListener("click", call);
