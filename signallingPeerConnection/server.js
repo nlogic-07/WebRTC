@@ -103,8 +103,38 @@ io.on("connection", (socket) => {
       );
       if (offerInOffers) {
         offerInOffers.offererIceCandidates.push(iceCandidate);
+        if (offerInOffers.answererUserName) {
+          //pass it through to the other socket
+          const socketToSendTo = connectedSockets.find(
+            (s) => s.userName === offerInOffers.answererUserName,
+          );
+          if (socketToSendTo) {
+            socket
+              .to(socketToSendTo.socketId)
+              .emit("receivedIceCandidateFromServer", iceCandidate);
+          } else {
+            console.log("Ice candidate recieved but could not find answere");
+          }
+        }
       }
     } else {
+      const offerInOffers = offers.find(
+        (o) => o.answererUserName === iceUserName,
+      );
+
+      if (offerInOffers) {
+        offerInOffers.answererIceCandidates.push(iceCandidate);
+      }
+      const socketToSendTo = connectedSockets.find(
+        (s) => s.username === offerInOffers.offererUserName,
+      );
+      if (socketToSendTo) {
+        socket
+          .to(socketToSendTo.socketId)
+          .emit("receivedIceCandidateFromServer", iceCandidate);
+      } else {
+        console.log("Ice candidate recieved but could not find offerer");
+      }
     }
   });
 });
