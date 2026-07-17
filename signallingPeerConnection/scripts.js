@@ -54,6 +54,10 @@ const answerOffer = async (offerObj) => {
   console.log(offerIceCandidates);
 };
 
+const addAnswer=(offerObj)=>{
+  await peerConnection.setRemoteDescription(offerObj.answer)
+}
+
 const fetchUserMedia = () => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -112,5 +116,10 @@ const createPeerConnection = async (offerObj) => {
     resolve();
   });
 };
+
+const addNewIceCandidate = iceCandidate=>{
+    peerConnection.addIceCandidate(iceCandidate)
+    console.log("======Added Ice Candidate======")
+}
 
 document.querySelector("#call").addEventListener("click", call);
